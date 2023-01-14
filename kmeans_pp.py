@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import math
 import sys
+import mykmeanssp as cmod
 
 """
 Func joins two points' files according to the first coloumn.
@@ -70,15 +71,33 @@ def calc_prob(min_dists: np.ndarray) -> np.ndarray:
     for i in range(len(probs)):
         probs[i] /= sum_min_dists
     return probs
+
+def print_mat(points: list) -> None:
+    for point in points:
+        print_line(point)
+
+def print_line(point: list) -> None:
+    line = ""
+    for cor in point:
+        if type(cor) == int:
+            line += '%d' % cor
+        else:
+            line += '%.4f' % cor
+        line += ','
+    print(line[:-1])
     
 def main(k: int, itter: int, eps: float, path1: str, path2: str) -> pd.DataFrame:
     points = get_points(path1, path2)
     if len(points) < k:
         print("Invalid number of clusters!")
         return None
-    centroids = choose_centroids(k, points.copy())
-    print(centroids)
-    return centroids
+    centroids, chosen_cents = [], []
+    for point in choose_centroids(k, points.copy()):
+        chosen_cents.append(int(point[0]))
+        centroids.append(point.tolist()[1:])
+    centroids = cmod.fit(itter, eps, centroids, [point[1:] for point in points.tolist()])
+    print_line(chosen_cents)
+    print_mat(centroids)
 
 if __name__ == "__main__":
     argv_len = len(sys.argv)
